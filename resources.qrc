@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>textures/earth.jpg</file>
+        <file>shaders/default130.frag</file>
+        <file>shaders/default130.vert</file>
+    </qresource>
+</RCC>

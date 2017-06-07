@@ -28,7 +28,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="MyGLWidget" name="widget" native="true">
+     <widget class="MyGLWidget" name="widgetRaytracing" native="true">
       <property name="minimumSize">
        <size>
         <width>600</width>
