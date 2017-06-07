@@ -5,66 +5,41 @@ MyGLWidget::MyGLWidget()
 
 }
 
-MyGLWidget::MyGLWidget(QWidget* parent):
-    QOpenGLWidget(parent),
-    vbo(QOpenGLBuffer::VertexBuffer),
-    ibo(QOpenGLBuffer::IndexBuffer)
+MyGLWidget::MyGLWidget(QWidget* parent):QOpenGLWidget(parent)
 {
     this->setVisible(true);
     this->setFocusPolicy(Qt::StrongFocus);
 }
 
+//resize OpenGl-Window
 void MyGLWidget::resizeGL(int width, int height){
-
     height = (height == 0) ? 1 : height;
     // Set viewport to cover the whole window
     glViewport(0, 0, width, height);
 }
 
-void MyGLWidget::fillBuffers(){
-    //QImage img = new QImage(":/textures/earth.jpg");
+ //load each MyObject here
+void MyGLWidget::loadObjects(){
 
-    ModelLoader model;
-    bool res = model.loadObjectFromFile("/home/dustin/Documents/CG_Prakt/Praktikum3/models/sphere_high.obj");
-    // Wenn erfolgreich, generiere VBO und Index-Array
-    if (res) {
-       if(model.hasTextureCoordinates()){
-           //this->hasTexCoord = true;
-           vboLength = model.lengthOfVBO(0,true,true);
-           iboLength = model.lengthOfIndexArray();
-           vboData = new GLfloat[vboLength];
-           indexData = new GLuint[iboLength];
-           model.genVBO(vboData,0,true,true);
-           model.genIndexArray(indexData);
-           }
-           else{
-           //this->hasTexCoord = false;
-           vboLength = model.lengthOfVBO(0,true,false);
-           iboLength = model.lengthOfIndexArray();
-           vboData = new GLfloat[vboLength];
-           indexData = new GLuint[iboLength];
-           model.genVBO(vboData,0,true,false);
-           model.genIndexArray(indexData);
-           }
-       }
-       else {}
+    //resize Vector to fit number of Objects
+    this->myObjects.resize(3);
 
-       vbo.create();
-       vbo.bind();
-       vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-       vbo.allocate(vboData, sizeof(GLfloat) * vboLength);
-       vbo.release();
+    //Create Objects
+    MyObject *sphere = new MyObject(0.0,0.0,0.0,0.0,0.0,"/home/dustin/Documents/CG_Prakt/FinalProject/models/sphere_high.obj");
+    //MyObject *cube = new MyObject();
+    //MyObject *cylinder = new MyObject();
 
-       ibo.create();
-       ibo.bind();
-       ibo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-       ibo.allocate(indexData, sizeof(GLuint) * iboLength);
-       ibo.release();
+    //add Object to myObjects-Vector
+    myObjects.at(0) = sphere;
+    //myObjects.at(1) = cube;
+    //myObjects.at(2) = cylinder;
+
 }
 
+//Initialize OpenGL
 void MyGLWidget::initializeGL(){
       this->createShaders(); //Initialisieren der Shader
-      this->fillBuffers(); //Load models
+      this->loadObjects();
 
       glEnable(GL_DEPTH_TEST);
       glCullFace(GL_BACK);
@@ -97,19 +72,24 @@ void MyGLWidget::paintGL(){
 
 void MyGLWidget::createShaders(){
 
-    defaultRay = new QOpenGLShaderProgram();
+    /*default130 = new QOpenGLShaderProgram();
+    default130->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/default130.vert");
+    default130->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/default130.frag");
+    default130->link();*/
+
+    /*defaultRay = new QOpenGLShaderProgram();
     defaultRay->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/defaultRay.vert");
     defaultRay->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/defaultRay.frag");
     defaultRay->link();
 
     monteCarlo = new QOpenGLShaderProgram();
     monteCarlo->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/monteCarlo.vert");
-    monteCarlo->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/monteCarlo.frag");
+    monteCarlo->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/monteCarlo.frag");*/
 }
 
-void MyGLWidget::render(/*Planet *planet,*/ QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view){
+void MyGLWidget::render(MyObject *myObject, QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view){
 
-    /*QMatrix3x3 n = model.normalMatrix();
+    QMatrix3x3 n = model.normalMatrix();
     QVector4D lightPosition(1.0,1.0,1.0,1.0);
     QVector3D lightIntensity(1.0,1.0,1.0);
     QVector3D kd(1.0,1.0,1.0);
@@ -117,102 +97,94 @@ void MyGLWidget::render(/*Planet *planet,*/ QMatrix4x4 perspective, QMatrix4x4 m
     QVector3D ks(1.0,1.0,1.0);
     float shininess = 32.0;
 
-    planet->shaderProgram->bind();
-    this->vbo.bind();
-    this->ibo.bind();
+    myObject->getShader()->bind();
+    myObject->getVbo()->bind();
+    myObject->getIbo()->bind();
 
     // Lokalisiere bzw. definiere die Schnittstelle für die Eckpunkte
     int attrVertices = 0;
-    attrVertices = planet->shaderProgram->attributeLocation("vert"); // #version 130
+    attrVertices = myObject->getShader()->attributeLocation("vert"); // #version 130
     int attrTexCoords = 1;
-    attrTexCoords = planet->shaderProgram->attributeLocation("texCoord"); // #version 130
+    attrTexCoords = myObject->getShader()->attributeLocation("texCoord"); // #version 130
     int attrNorCoords = 2;
-    attrNorCoords = planet->shaderProgram->attributeLocation("normCoord"); //anpassen der Location !!!!
+    attrNorCoords = myObject->getShader()->attributeLocation("normCoord"); //anpassen der Location !!!!
 
     // Aktiviere die Verwendung der Attribute-Arrays
-    planet->shaderProgram->enableAttributeArray(attrVertices);
-    if(hasTexCoord){
-        planet->shaderProgram->enableAttributeArray(attrTexCoords);
+    myObject->getShader()->enableAttributeArray(attrVertices);
+    if(myObject->getHasTexCoord()){
+        myObject->getShader()->enableAttributeArray(attrTexCoords);
     }
-    planet->shaderProgram->enableAttributeArray(attrNorCoords);
+    myObject->getShader()->enableAttributeArray(attrNorCoords);
 
-    planet->_texture->bind(0);
-    planet->shaderProgram->setUniformValue("texture", 0);
-
-    if(planet->planetName == "sun"){
-        planet->distortionTex->bind(1);
-        planet->shaderProgram->setUniformValue("distortionTex",1);
-    }
+    myObject->getTex()->bind(0);
+    myObject->getShader()->setUniformValue("texture", 0);
 
     //Uniforms
     int unifMatrix = 0;
-    unifMatrix = planet->shaderProgram->uniformLocation("modelMatrix");
-    planet->shaderProgram->setUniformValue(unifMatrix, model);
+    unifMatrix = myObject->getShader()->uniformLocation("modelMatrix");
+    myObject->getShader()->setUniformValue(unifMatrix, model);
     int unifMatrix1 = 1;
-    unifMatrix1 = planet->shaderProgram->uniformLocation("perspectiveMatrix");
-    planet->shaderProgram->setUniformValue(unifMatrix1, perspective);
+    unifMatrix1 = myObject->getShader()->uniformLocation("perspectiveMatrix");
+    myObject->getShader()->setUniformValue(unifMatrix1, perspective);
     int unifMatrix2 = 2;
-    unifMatrix2 = planet->shaderProgram->uniformLocation("viewMatrix");
-    planet->shaderProgram->setUniformValue(unifMatrix2, view);
-    int unifTime = 3;
-    unifTime = planet->shaderProgram->uniformLocation("time");
-    planet->shaderProgram->setUniformValue(unifTime, this->time);
+    unifMatrix2 = myObject->getShader()->uniformLocation("viewMatrix");
+    myObject->getShader()->setUniformValue(unifMatrix2, view);
+    //int unifTime = 3;
+    //unifTime = myObject->getShader()->uniformLocation("time");
+    //myObject->getShader()->setUniformValue(unifTime, this->time);
     int unifMatrix3 = 4;
-    unifMatrix3 = planet->shaderProgram->uniformLocation("normalMatrix");
-    planet->shaderProgram->setUniformValue(unifMatrix3, n);
+    unifMatrix3 = myObject->getShader()->uniformLocation("normalMatrix");
+    myObject->getShader()->setUniformValue(unifMatrix3, n);
     int unifLightP = 5;
-    unifLightP = planet->shaderProgram->uniformLocation("lightPosition");
-    planet->shaderProgram->setUniformValue(unifLightP, lightPosition);
+    unifLightP = myObject->getShader()->uniformLocation("lightPosition");
+    myObject->getShader()->setUniformValue(unifLightP, lightPosition);
     int unifLightI = 6;
-    unifLightI = planet->shaderProgram->uniformLocation("lightIntensity");
-    planet->shaderProgram->setUniformValue(unifLightI, lightIntensity);
+    unifLightI = myObject->getShader()->uniformLocation("lightIntensity");
+    myObject->getShader()->setUniformValue(unifLightI, lightIntensity);
     int unifKd = 7;
-    unifKd = planet->shaderProgram->uniformLocation("kd");
-    planet->shaderProgram->setUniformValue(unifKd, kd);
+    unifKd = myObject->getShader()->uniformLocation("kd");
+    myObject->getShader()->setUniformValue(unifKd, kd);
     int unifKa = 8;
-    unifKa = planet->shaderProgram->uniformLocation("ka");
-    planet->shaderProgram->setUniformValue(unifKa, ka);
+    unifKa = myObject->getShader()->uniformLocation("ka");
+    myObject->getShader()->setUniformValue(unifKa, ka);
     int unifKs = 9;
-    unifKs = planet->shaderProgram->uniformLocation("ks");
-    planet->shaderProgram->setUniformValue(unifKs, ks);
+    unifKs = myObject->getShader()->uniformLocation("ks");
+    myObject->getShader()->setUniformValue(unifKs, ks);
     int unifShine = 10;
-    unifShine = planet->shaderProgram->uniformLocation("shininess");
-   planet->shaderProgram->setUniformValue(unifShine, shininess);
+    unifShine = myObject->getShader()->uniformLocation("shininess");
+   myObject->getShader()->setUniformValue(unifShine, shininess);
 
 
 
-    if(this->hasTexCoord){
+    if(myObject->getHasTexCoord()){
         int offset = 0;
         int stride = 12 * sizeof(GLfloat);
-        planet->shaderProgram->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
+        myObject->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
         offset += 4 * sizeof(GLfloat);
-        planet->shaderProgram->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
+        myObject->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
         offset += 4 * sizeof(GLfloat);
-        planet->shaderProgram->setAttributeBuffer(attrTexCoords, GL_FLOAT, offset, 4, stride);
+        myObject->getShader()->setAttributeBuffer(attrTexCoords, GL_FLOAT, offset, 4, stride);
     }
     else{
         int offset = 0;
         int stride = 8 * sizeof(GLfloat);
-        planet->shaderProgram->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
+        myObject->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
         offset += 4 * sizeof(GLfloat);
-        planet->shaderProgram->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
+        myObject->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
     }
 
-    glDrawElements(GL_TRIANGLES, this->iboLength, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, myObject->getIboLength(), GL_UNSIGNED_INT, 0);
 
-    if(hasTexCoord){
-        planet->shaderProgram->disableAttributeArray(attrTexCoords);
+    if(myObject->getHasTexCoord()){
+        myObject->getShader()->disableAttributeArray(attrTexCoords);
     }
-    planet->shaderProgram->disableAttributeArray(attrVertices);
-    planet->shaderProgram->disableAttributeArray(attrNorCoords);
-    planet->_texture->release();
+    myObject->getShader()->disableAttributeArray(attrVertices);
+    myObject->getShader()->disableAttributeArray(attrNorCoords);
+    myObject->getTex()->release();
 
-    if(planet->planetName == "sun"){
-        planet->distortionTex->release();
-    }
-    this->vbo.release();
-    this->ibo.release();
+    myObject->getVbo()->release();
+    myObject->getIbo()->release();
 
     // Löse das Shader-Programm
-    planet->shaderProgram->release();*/
+    myObject->getShader()->release();
 }

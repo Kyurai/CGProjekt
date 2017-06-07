@@ -12,33 +12,37 @@
 #include "modelloader.h"
 #include <string>
 #include <vector>
+#include "myobject.h"
 
 class MyGLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 
 private:
-    QOpenGLBuffer vbo; //Vertex Buffer Object
-    QOpenGLBuffer ibo; //Indices Buffer Object
+    //QOpenGLBuffer vbo; //Vertex Buffer Object
+    //QOpenGLBuffer ibo; //Indices Buffer Object
 
-    GLfloat* vboData;
-    GLuint* indexData; // GLuint statt GLubyte, da viele Modelle groß sind
-    unsigned int vboLength;
-    unsigned int iboLength;
+    //GLfloat* vboData;
+    //GLuint* indexData; // GLuint statt GLubyte, da viele Modelle groß sind
+    //unsigned int vboLength;
+    //unsigned int iboLength;
 
-    QOpenGLShaderProgram *defaultRay, *monteCarlo;
-    QOpenGLTexture* qTex;
+    std::vector<MyObject*> myObjects;
+    QOpenGLShaderProgram *defaultRay, *monteCarlo, *default130;
+    //QOpenGLTexture* qTex;
+
+    //bool hasTexCoord;
 
 public:
     MyGLWidget();
     MyGLWidget(QWidget *parent);
 
     void initializeGL();
+    void loadObjects();
     void resizeGL(int width, int height);
     void paintGL();
-    void fillBuffers();
     void createShaders();
-    void render(/*Planet *planet,*/QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view);
+    void render(MyObject *myObject, QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view);
 };
 
 #endif // MYGLWIDGET_H
