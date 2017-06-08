@@ -2,9 +2,9 @@
 #define MYOBJECT_H
 
 #include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include "modelloader.h"
+#include "myshader.h"
 
 
 class MyObject
@@ -19,6 +19,7 @@ private:
 
     double angle;
     double rotation;
+    double scale;
 
     double opacity;
 
@@ -38,16 +39,14 @@ private:
 
 public:
     MyObject();
-    MyObject(double X, double Y, double Z, double angle, double rotation, std::string modelPath);
+    MyObject(double X, double Y, double Z, double angle, double rotation, double scale, std::string modelPath);
+    ~MyObject();
 
     bool loadAll();
     bool loadObject(); //load model/object into vbo
-    void loadShader();
     void loadTexture();
 
-
-    QOpenGLShaderProgram *getShader() const;
-    void setShader(QOpenGLShaderProgram *value);
+    //Getter&Setter
     QOpenGLTexture *getTex() const;
     void setTex(QOpenGLTexture *value);
     std::string getTextureName() const;
@@ -82,6 +81,10 @@ public:
     void setVbo(QOpenGLBuffer *value);
     QOpenGLBuffer *getIbo() const;
     void setIbo(QOpenGLBuffer *value);
+    double getScale() const;
+    void setScale(double value);
+    QOpenGLShaderProgram *getShader() const;
+    void setShader(QOpenGLShaderProgram *value);
 };
 
 #endif // MYOBJECT_H

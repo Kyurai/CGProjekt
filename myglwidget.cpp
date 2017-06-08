@@ -20,25 +20,34 @@ void MyGLWidget::resizeGL(int width, int height){
 
  //load each MyObject here
 void MyGLWidget::loadObjects(){
-
     //resize Vector to fit number of Objects
-    this->myObjects.resize(3);
+    this->myObjects.resize(4);
 
+    //Anpassung der Pfade auf relative Pfade !!!
     //Create Objects
-    MyObject *sphere = new MyObject(0.0,0.0,0.0,0.0,0.0,"/home/dustin/Documents/CG_Prakt/FinalProject/models/sphere_high.obj");
-    //MyObject *cube = new MyObject();
+    MyObject *room = new MyObject(0.0,0.0,0.0,0.0,0.0,10.0,"/home/dustin/Documents/CG_Prakt/FinalProjekt/models/cube.obj");
+    MyObject *sphere = new MyObject(0.0,0.0,0.0,0.0,0.0,1.0,"/home/dustin/Documents/CG_Prakt/FinalProject/models/sphere_high.obj");
+    MyObject *cube = new MyObject(0.0,0.0,0.0,0.0,0.0,2.0,"/home/dustin/Documents/CG_Prakt/FinalProjekt/models/cube.obj");
     //MyObject *cylinder = new MyObject();
 
+    //keine Ahnung ob das so funzt :D
+    room->setShader(this->shaders->getShaders()->at("default130"));
+    sphere->setShader(this->shaders->getShaders()->at("default130"));
+    cube->setShader(this->shaders->getShaders()->at("default130"));
+    //cylinder->setShader(this->shaders->getShaders()->at("default130"));
+
     //add Object to myObjects-Vector
-    myObjects.at(0) = sphere;
-    //myObjects.at(1) = cube;
-    //myObjects.at(2) = cylinder;
+    myObjects.at(0) = room;
+    myObjects.at(1) = sphere;
+    myObjects.at(2) = cube;
+    //myObjects.at(3) = cylinder;
+
 
 }
 
 //Initialize OpenGL
 void MyGLWidget::initializeGL(){
-      this->createShaders(); //Initialisieren der Shader
+      this->shaders->loadShaders();
       this->loadObjects();
 
       glEnable(GL_DEPTH_TEST);
@@ -68,23 +77,6 @@ void MyGLWidget::paintGL(){
     viewMatrix.rotate(0.0,0.0,1.0,0.0);
     viewMatrix.scale(0.0,0.0,0.0);
 
-}
-
-void MyGLWidget::createShaders(){
-
-    /*default130 = new QOpenGLShaderProgram();
-    default130->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/default130.vert");
-    default130->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/default130.frag");
-    default130->link();*/
-
-    /*defaultRay = new QOpenGLShaderProgram();
-    defaultRay->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/defaultRay.vert");
-    defaultRay->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/defaultRay.frag");
-    defaultRay->link();
-
-    monteCarlo = new QOpenGLShaderProgram();
-    monteCarlo->addShaderFromSourceFile(QOpenGLShader::Vertex,":shader/monteCarlo.vert");
-    monteCarlo->addShaderFromSourceFile(QOpenGLShader::Fragment,":shader/monteCarlo.frag");*/
 }
 
 void MyGLWidget::render(MyObject *myObject, QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view){

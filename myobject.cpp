@@ -1,16 +1,6 @@
 #include "myobject.h"
 
 #define FOLDINGSTART {
-QOpenGLShaderProgram *MyObject::getShader() const
-{
-    return shader;
-}
-
-void MyObject::setShader(QOpenGLShaderProgram *value)
-{
-    shader = value;
-}
-
 QOpenGLTexture *MyObject::getTex() const
 {
     return tex;
@@ -181,15 +171,39 @@ void MyObject::setIbo(QOpenGLBuffer *value)
     ibo = value;
 }
 
+double MyObject::getScale() const
+{
+    return scale;
+}
+
+void MyObject::setScale(double value)
+{
+    scale = value;
+}
+
 #define FOLDINGEND }
 
+
+QOpenGLShaderProgram *MyObject::getShader() const
+{
+    return shader;
+}
+
+void MyObject::setShader(QOpenGLShaderProgram *value)
+{
+    shader = value;
+}
 
 MyObject::MyObject(){
     this->vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     this->ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 }
 
-MyObject::MyObject(double X,double Y,double Z,double angle,double rotation,std::string Path)
+MyObject::~MyObject(){
+    delete this; //???
+}
+
+MyObject::MyObject(double X,double Y,double Z,double angle,double rotation, double scale, std::string Path)
 {
     this->vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
     this->ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
@@ -200,6 +214,7 @@ MyObject::MyObject(double X,double Y,double Z,double angle,double rotation,std::
 
     this->angle = angle;
     this->rotation = rotation;
+    this->scale = scale;
 
     this->filePath = Path;
 }
@@ -210,7 +225,6 @@ bool MyObject::loadAll(){
         return false;
     }
     else{
-        this->loadShader();
         this->loadTexture();
         return true;
     }
@@ -261,8 +275,4 @@ bool MyObject::loadObject(){
 void MyObject::loadTexture(){
     QString _textureName = QString::fromStdString(this->textureName);
     this->tex = new QOpenGLTexture(QImage(":/textures/"+_textureName+".jpg").mirrored());
-}
-
-void MyObject::loadShader(){
-
 }

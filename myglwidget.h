@@ -13,25 +13,15 @@
 #include <string>
 #include <vector>
 #include "myobject.h"
+#include "myshader.h"
 
 class MyGLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 
 private:
-    //QOpenGLBuffer vbo; //Vertex Buffer Object
-    //QOpenGLBuffer ibo; //Indices Buffer Object
-
-    //GLfloat* vboData;
-    //GLuint* indexData; // GLuint statt GLubyte, da viele Modelle groß sind
-    //unsigned int vboLength;
-    //unsigned int iboLength;
-
     std::vector<MyObject*> myObjects;
-    QOpenGLShaderProgram *defaultRay, *monteCarlo, *default130;
-    //QOpenGLTexture* qTex;
-
-    //bool hasTexCoord;
+    myShader *shaders;
 
 public:
     MyGLWidget();

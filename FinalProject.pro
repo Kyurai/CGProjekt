@@ -29,12 +29,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     myglwidget.cpp \
     modelloader.cpp \
-    myobject.cpp
+    myobject.cpp \
+    myshader.cpp
 
 HEADERS  += mainwindow.h \
     myglwidget.h \
     modelloader.h \
-    myobject.h
+    myobject.h \
+    myshader.h
 
 FORMS    += mainwindow.ui
 
