@@ -1,182 +1,184 @@
 #include "myglwidget.h"
 
-MyGLWidget::MyGLWidget()
-{
-
-}
-
-MyGLWidget::MyGLWidget(QWidget* parent):QOpenGLWidget(parent)
-{
-    this->setVisible(true);
-    this->setFocusPolicy(Qt::StrongFocus);
-}
 
 //resize OpenGl-Window
-void MyGLWidget::resizeGL(int width, int height){
+void MyGLWidget::resizeGL(int width, int height)
+{
     height = (height == 0) ? 1 : height;
     // Set viewport to cover the whole window
     glViewport(0, 0, width, height);
 }
 
- //load each MyObject here
-void MyGLWidget::loadObjects(){
-    //resize Vector to fit number of Objects
-    this->myObjects.resize(4);
-
-    //Anpassung der Pfade auf relative Pfade !!!
-    //Create Objects
-    MyObject *room = new MyObject(0.0,0.0,0.0,0.0,0.0,10.0,"/home/dustin/Documents/CG_Prakt/FinalProjekt/models/cube.obj");
-    MyObject *sphere = new MyObject(0.0,0.0,0.0,0.0,0.0,1.0,"/home/dustin/Documents/CG_Prakt/FinalProject/models/sphere_high.obj");
-    MyObject *cube = new MyObject(0.0,0.0,0.0,0.0,0.0,2.0,"/home/dustin/Documents/CG_Prakt/FinalProjekt/models/cube.obj");
-    //MyObject *cylinder = new MyObject();
-
-    //keine Ahnung ob das so funzt :D
-    room->setShader(this->shaders->getShaders()->at("default130"));
-    sphere->setShader(this->shaders->getShaders()->at("default130"));
-    cube->setShader(this->shaders->getShaders()->at("default130"));
-    //cylinder->setShader(this->shaders->getShaders()->at("default130"));
-
-    //add Object to myObjects-Vector
-    myObjects.at(0) = room;
-    myObjects.at(1) = sphere;
-    myObjects.at(2) = cube;
-    //myObjects.at(3) = cylinder;
-
-
-}
 
 //Initialize OpenGL
-void MyGLWidget::initializeGL(){
-      this->shaders->loadShaders();
-      this->loadObjects();
 
-      glEnable(GL_DEPTH_TEST);
-      glCullFace(GL_BACK);
-      glEnable(GL_CULL_FACE);
-      glDepthFunc(GL_LEQUAL);
-      glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-      glClearDepth(1.0f);
-      glClearColor(0.0f, 0.0f, 0.0f, 0.0f);//Set bgColor black
+void MyGLWidget::initializeGL(){
+
+
+
+        QPoint p = this->mapFromGlobal(QCursor ::pos());
+        lastX = p.x();
+        lastY = p.y();
+
+        shaders = new Shader();
+
+        earthObject = new Object(0.0f, 0.0f, -10.0f, "C:/Users/lucas/Desktop/CGProjekt-master/models/sphere_high.obj", "earth", shaders->getShader("default"));
+        time.start();
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glDepthFunc(GL_LEQUAL);
+
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+        glClearDepth(1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+
+
 }
 
 void MyGLWidget::paintGL(){
-    // Clear buffer to set color and alpha
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glCullFace(GL_BACK);
+        int currentFrame = time.elapsed();
+        deltaTime = ((float)currentFrame - (float)lastFrame)/100.0f;
+        lastFrame = currentFrame;
+        std::cout << "deltaTime: " << deltaTime << std::endl;
 
-    std::stack<QMatrix4x4> matrixStack;
-    QMatrix4x4 perspectiveMatrix, modelMatrix, viewMatrix;
-    modelMatrix.setToIdentity();
-    perspectiveMatrix.setToIdentity();
-    perspectiveMatrix.perspective(45.0, 16/9, 0.01, 100.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    viewMatrix.setToIdentity();
-    viewMatrix.translate(0,0,-1);
-    viewMatrix.rotate(0.0,1.0,0.0,0.0);
-    viewMatrix.rotate(0.0,0.0,1.0,0.0);
-    viewMatrix.rotate(0.0,0.0,1.0,0.0);
-    viewMatrix.scale(0.0,0.0,0.0);
+
+
+        std::stack<QMatrix4x4> matrixStack;
+        QMatrix4x4 modelMatrix, perspectiveMatrix, viewMatrix;
+
+        perspectiveMatrix.perspective(camera.Zoom, (float)MyGLWidget::width() / (float)MyGLWidget::height(), 0.1, 100.0);
+
+
+        viewMatrix = camera.GetViewMatrix();
+
+        modelMatrix.setToIdentity();
+        modelMatrix.translate(0.0f,0.0f,-10.0f);
+
+        render(earthObject,modelMatrix, perspectiveMatrix, viewMatrix);
+
+        update();
+}
+
+void MyGLWidget::wheelEvent(QWheelEvent *event){
+
+    camera.ProcessMouseScroll(event->angleDelta().y() / 8);
+
+
 
 }
 
-void MyGLWidget::render(MyObject *myObject, QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view){
+void MyGLWidget::mouseMoveEvent(QMouseEvent *event)
+{
 
-    QMatrix3x3 n = model.normalMatrix();
-    QVector4D lightPosition(1.0,1.0,1.0,1.0);
-    QVector3D lightIntensity(1.0,1.0,1.0);
-    QVector3D kd(1.0,1.0,1.0);
-    QVector3D ka(0.1,0.1,0.1);
-    QVector3D ks(1.0,1.0,1.0);
-    float shininess = 32.0;
 
-    myObject->getShader()->bind();
-    myObject->getVbo()->bind();
-    myObject->getIbo()->bind();
+    float xOffset = (float)event->x() - lastX;
+    float yOffset = lastY - (float)event->y();
 
-    // Lokalisiere bzw. definiere die Schnittstelle für die Eckpunkte
-    int attrVertices = 0;
-    attrVertices = myObject->getShader()->attributeLocation("vert"); // #version 130
-    int attrTexCoords = 1;
-    attrTexCoords = myObject->getShader()->attributeLocation("texCoord"); // #version 130
-    int attrNorCoords = 2;
-    attrNorCoords = myObject->getShader()->attributeLocation("normCoord"); //anpassen der Location !!!!
+    lastX = (float)event->x();
+    lastY = (float)event->y();
 
-    // Aktiviere die Verwendung der Attribute-Arrays
-    myObject->getShader()->enableAttributeArray(attrVertices);
-    if(myObject->getHasTexCoord()){
-        myObject->getShader()->enableAttributeArray(attrTexCoords);
-    }
-    myObject->getShader()->enableAttributeArray(attrNorCoords);
+    camera.ProcessMouseMovement(xOffset,yOffset);
+}
 
-    myObject->getTex()->bind(0);
-    myObject->getShader()->setUniformValue("texture", 0);
+void MyGLWidget::keyPressEvent(QKeyEvent *event)
+{
 
-    //Uniforms
-    int unifMatrix = 0;
-    unifMatrix = myObject->getShader()->uniformLocation("modelMatrix");
-    myObject->getShader()->setUniformValue(unifMatrix, model);
-    int unifMatrix1 = 1;
-    unifMatrix1 = myObject->getShader()->uniformLocation("perspectiveMatrix");
-    myObject->getShader()->setUniformValue(unifMatrix1, perspective);
-    int unifMatrix2 = 2;
-    unifMatrix2 = myObject->getShader()->uniformLocation("viewMatrix");
-    myObject->getShader()->setUniformValue(unifMatrix2, view);
-    //int unifTime = 3;
-    //unifTime = myObject->getShader()->uniformLocation("time");
-    //myObject->getShader()->setUniformValue(unifTime, this->time);
-    int unifMatrix3 = 4;
-    unifMatrix3 = myObject->getShader()->uniformLocation("normalMatrix");
-    myObject->getShader()->setUniformValue(unifMatrix3, n);
-    int unifLightP = 5;
-    unifLightP = myObject->getShader()->uniformLocation("lightPosition");
-    myObject->getShader()->setUniformValue(unifLightP, lightPosition);
-    int unifLightI = 6;
-    unifLightI = myObject->getShader()->uniformLocation("lightIntensity");
-    myObject->getShader()->setUniformValue(unifLightI, lightIntensity);
-    int unifKd = 7;
-    unifKd = myObject->getShader()->uniformLocation("kd");
-    myObject->getShader()->setUniformValue(unifKd, kd);
-    int unifKa = 8;
-    unifKa = myObject->getShader()->uniformLocation("ka");
-    myObject->getShader()->setUniformValue(unifKa, ka);
-    int unifKs = 9;
-    unifKs = myObject->getShader()->uniformLocation("ks");
-    myObject->getShader()->setUniformValue(unifKs, ks);
-    int unifShine = 10;
-    unifShine = myObject->getShader()->uniformLocation("shininess");
-   myObject->getShader()->setUniformValue(unifShine, shininess);
+     switch(event->key()){
+     case Qt::Key_W:
+     case Qt::Key_Up:
+         camera.ProcessKeyboard(FORWARD,deltaTime);
+         break;
+     case Qt::Key_A:
+     case Qt::Key_Left:
+         camera.ProcessKeyboard(LEFT,deltaTime);
+         break;
+     case Qt::Key_D:
+     case Qt::Key_Right:
+         camera.ProcessKeyboard(RIGHT,deltaTime);
+         break;
+     case Qt::Key_S:
+     case Qt::Key_Down:
+         camera.ProcessKeyboard(BACKWARD,deltaTime);
+         break;
+
+     default:
+         QOpenGLWidget::keyPressEvent(event);
+     }
+ }
 
 
 
-    if(myObject->getHasTexCoord()){
-        int offset = 0;
-        int stride = 12 * sizeof(GLfloat);
-        myObject->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
-        offset += 4 * sizeof(GLfloat);
-        myObject->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
-        offset += 4 * sizeof(GLfloat);
-        myObject->getShader()->setAttributeBuffer(attrTexCoords, GL_FLOAT, offset, 4, stride);
-    }
-    else{
-        int offset = 0;
-        int stride = 8 * sizeof(GLfloat);
-        myObject->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
-        offset += 4 * sizeof(GLfloat);
-        myObject->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
-    }
 
-    glDrawElements(GL_TRIANGLES, myObject->getIboLength(), GL_UNSIGNED_INT, 0);
+void MyGLWidget::render(Object *object, QMatrix4x4 m, QMatrix4x4 p, QMatrix4x4 v)
+{
+        object->getShader()->bind();
+        object->getVBO()->bind();
+        object->getIBO()->bind();
 
-    if(myObject->getHasTexCoord()){
-        myObject->getShader()->disableAttributeArray(attrTexCoords);
-    }
-    myObject->getShader()->disableAttributeArray(attrVertices);
-    myObject->getShader()->disableAttributeArray(attrNorCoords);
-    myObject->getTex()->release();
 
-    myObject->getVbo()->release();
-    myObject->getIbo()->release();
+        int attrVertices = 0;
+        attrVertices = object->getShader()->attributeLocation("vert");
+        int attrTexCoords = 1;
+        attrTexCoords = object->getShader()->attributeLocation("texCoord");
+        int attrNorCoords = 2;
+        attrNorCoords = object->getShader()->attributeLocation("normCoord");
 
-    // Löse das Shader-Programm
-    myObject->getShader()->release();
+        object->getShader()->enableAttributeArray(attrVertices);
+        if(object->hasTextureCoords()){
+            object->getShader()->enableAttributeArray(attrTexCoords);
+        }
+        object->getShader()->enableAttributeArray(attrNorCoords);
+        object->getTexture()->bind(0);
+        object->getShader()->setUniformValue("texture", 0);
+
+
+
+        int unifMatrix = 0;
+        unifMatrix = object->getShader()->uniformLocation("modelMatrix");
+        object->getShader()->setUniformValue(unifMatrix, m);
+        int unifMatrix1 = 1;
+        unifMatrix1 = object->getShader()->uniformLocation("perspectiveMatrix");
+        object->getShader()->setUniformValue(unifMatrix1, p);
+        int unifMatrix2 = 2;
+        unifMatrix2 = object->getShader()->uniformLocation("viewMatrix");
+        object->getShader()->setUniformValue(unifMatrix2, v);
+
+
+        if(object->hasTextureCoords()){
+            int offset = 0;
+            int stride = 12 * sizeof(GLfloat);
+            object->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
+            offset += 4 * sizeof(GLfloat);
+            object->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
+            offset += 4 * sizeof(GLfloat);
+            object->getShader()->setAttributeBuffer(attrTexCoords, GL_FLOAT, offset, 4, stride);
+        }
+        else{
+            int offset = 0;
+            int stride = 8 * sizeof(GLfloat);
+            object->getShader()->setAttributeBuffer(attrVertices, GL_FLOAT, offset, 4, stride);
+            offset += 4 * sizeof(GLfloat);
+            object->getShader()->setAttributeBuffer(attrNorCoords, GL_FLOAT, offset, 4, stride);
+        }
+
+        glDrawElements(GL_TRIANGLES, object->getIBOLength(), GL_UNSIGNED_INT, 0);
+
+        object->getShader()->disableAttributeArray(attrVertices);
+        if(object->hasTextureCoords()){
+            object->getShader()->disableAttributeArray(attrTexCoords);
+        }
+        object->getShader()->disableAttributeArray(attrNorCoords);
+        object->getTexture()->release();
+        object->getVBO()->release();
+        object->getIBO()->release();
+
+        object->getShader()->release();
+
+
 }

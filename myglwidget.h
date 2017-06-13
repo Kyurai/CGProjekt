@@ -3,36 +3,59 @@
 
 #include <QWidget>
 #include <QOpenGLWidget>
+#include <stack>
+#include "camera.h"
+#include <QVector3D>
+#include <QTime>
 #include <QKeyEvent>
 #include <QWheelEvent>
-#include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
-#include <stack>
-#include <QOpenGLTexture>
-#include "modelloader.h"
-#include <string>
-#include <vector>
-#include "myobject.h"
-#include "myshader.h"
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <iostream>
+#include "shader.h"
+#include "object.h"
+
 
 class MyGLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 
 private:
-    std::vector<MyObject*> myObjects;
-    myShader *shaders;
 
-public:
-    MyGLWidget();
-    MyGLWidget(QWidget *parent);
+    Camera camera;
 
+    float lastX = MyGLWidget::width() / 2.0f;
+    float lastY = MyGLWidget::height() /2.0f;
+
+
+    float deltaTime = 0;
+    int lastFrame = 0;
+
+    QTime time;
+
+    Shader *shaders;
+
+    Object *earthObject;
+
+
+    void render(Object *object, QMatrix4x4 m, QMatrix4x4 p, QMatrix4x4 v);
+
+protected:
     void initializeGL();
-    void loadObjects();
     void resizeGL(int width, int height);
     void paintGL();
-    void createShaders();
-    void render(MyObject *myObject, QMatrix4x4 perspective, QMatrix4x4 model, QMatrix4x4 view);
+    void keyPressEvent(QKeyEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
+
+public:
+   MyGLWidget(QWidget *parent) : QOpenGLWidget(parent)
+   {
+       setFocusPolicy(Qt::StrongFocus);
+       //setMouseTracking(true);
+   }
+
 };
 
 #endif // MYGLWIDGET_H
