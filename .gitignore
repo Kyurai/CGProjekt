@@ -1,6 +1,7 @@
 #Project settings#
 ##################
 *.pro.user
+*.pro.user.*
 
 # Compiled source #
 ###################
