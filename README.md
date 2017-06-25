@@ -1,2 +1,0 @@
-# CGProjekt
-Raytracing
