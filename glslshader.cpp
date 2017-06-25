@@ -1,4 +1,4 @@
-#include "GLSLShader.h"
+#include "glslshader.h"
 #include <iostream>
 
 

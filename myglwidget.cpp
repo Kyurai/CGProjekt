@@ -135,8 +135,8 @@ void MyGLWidget::initializeGL(){
         raytraceShader = new GLSLShader();
         pathtraceShader = new GLSLShader();
 
-        flatShader->LoadFromFile(GL_VERTEX_SHADER,"C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/flat.vert");
-        flatShader->LoadFromFile(GL_FRAGMENT_SHADER,"C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/flat.frag");
+        flatShader->LoadFromFile(GL_VERTEX_SHADER,"/home/dustin/Documents/CG_Prakt/FinalProject/shaders/flat.vert");
+        flatShader->LoadFromFile(GL_FRAGMENT_SHADER,"/home/dustin/Documents/CG_Prakt/FinalProject/shaders/flat.frag");
         flatShader->CreateAndLinkProgram();
 
         flatShader->Use();
@@ -145,8 +145,8 @@ void MyGLWidget::initializeGL(){
         flatShader->UnUse();
 
         //load raytracing shader
-            raytraceShader->LoadFromFile(GL_VERTEX_SHADER, "C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/raytracer.vert");
-            raytraceShader->LoadFromFile(GL_FRAGMENT_SHADER, "C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/raytracer.frag");
+            raytraceShader->LoadFromFile(GL_VERTEX_SHADER, "/home/dustin/Documents/CG_Prakt/FinalProject/shaders/raytracer.vert");
+            raytraceShader->LoadFromFile(GL_FRAGMENT_SHADER, "/home/dustin/Documents/CG_Prakt/FinalProject/shaders/raytracer.frag");
             //compile and link shader
             raytraceShader->CreateAndLinkProgram();
             raytraceShader->Use();
@@ -177,8 +177,8 @@ void MyGLWidget::initializeGL(){
 
 
             //load pathtracing shader
-                pathtraceShader->LoadFromFile(GL_VERTEX_SHADER, "C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/pathtracer.vert");
-                pathtraceShader->LoadFromFile(GL_FRAGMENT_SHADER, "C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/pathtracer.frag");
+                pathtraceShader->LoadFromFile(GL_VERTEX_SHADER, "/home/dustin/Documents/CG_Prakt/FinalProject/shaders/pathtracer.vert");
+                pathtraceShader->LoadFromFile(GL_FRAGMENT_SHADER, "/home/dustin/Documents/CG_Prakt/FinalProject/shaders/pathtracer.frag");
                 //compile and link shader
                 pathtraceShader->CreateAndLinkProgram();
                 pathtraceShader->Use();
@@ -195,6 +195,8 @@ void MyGLWidget::initializeGL(){
                     pathtraceShader->AddUniform("time");
                     pathtraceShader->AddUniform("VERTEX_TEXTURE_SIZE");
                     pathtraceShader->AddUniform("TRIANGLE_TEXTURE_SIZE");
+                    pathtraceShader->AddUniform("BOUNCES");
+
 
                     //set values of constant uniforms as initialization
                     glUniform1f(pathtraceShader->getUniform("VERTEX_TEXTURE_SIZE"), (float)vertices2.size());
@@ -208,8 +210,8 @@ void MyGLWidget::initializeGL(){
 
 
 
-        shader->LoadFromFile(GL_VERTEX_SHADER,"C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/shader.vert");
-        shader->LoadFromFile(GL_FRAGMENT_SHADER,"C:/Users/lucas/Desktop/CG/CG Projekt Test/shaders/shader.frag");
+        shader->LoadFromFile(GL_VERTEX_SHADER,"/home/dustin/Documents/CG_Prakt/FinalProject/shaders/shader.vert");
+        shader->LoadFromFile(GL_FRAGMENT_SHADER,"/home/dustin/Documents/CG_Prakt/FinalProject/shaders/shader.frag");
         shader->CreateAndLinkProgram();
 
         shader->Use();
@@ -438,6 +440,8 @@ void MyGLWidget::paintGL(){
                             glUniform1f(pathtraceShader->getUniform("time"), currentFrame);
                             glUniform3fv(pathtraceShader->getUniform("light_position"),1, &(lightPosOS.x));
                             glUniformMatrix4fv(pathtraceShader->getUniform("invMVP"), 1, GL_FALSE, glm::value_ptr(invMVP));
+                            glUniform1i(pathtraceShader->getUniform("BOUNCES"), this->bounces);
+
                                 //draw a fullscreen quad
                             glBindVertexArray(quadVAOID);
                             //draw two triangles
@@ -595,6 +599,10 @@ void MyGLWidget::keyPressEvent(QKeyEvent *event)
      }
  }
 
+
+void MyGLWidget::receiveBounces(int bounces){
+    this->bounces = bounces;
+}
 
 
 

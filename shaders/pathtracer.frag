@@ -27,9 +27,10 @@ uniform Box aabb;	 					//scene's bounding box
 uniform float VERTEX_TEXTURE_SIZE; 		//size of the vertex texture
 uniform float TRIANGLE_TEXTURE_SIZE; 	//size of the triangle texture
 uniform float time;						//current time
+uniform int BOUNCES;
 
 //shader constants
-const int MAX_BOUNCES = 5;	//the total number of bounces for each ray
+int MAX_BOUNCES = BOUNCES;	//the total number of bounces for each ray
 
 //function to return the intersection of a ray with a box
 //returns a vec2 in which the x value contains the t value at the near intersection

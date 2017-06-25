@@ -41,13 +41,13 @@
      <widget class="QGroupBox" name="boxControls">
       <property name="minimumSize">
        <size>
-        <width>300</width>
+        <width>200</width>
         <height>500</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>300</width>
+        <width>200</width>
         <height>16777215</height>
        </size>
       </property>
@@ -56,24 +56,61 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QGroupBox" name="boxOption1">
+        <widget class="QGroupBox" name="boxFPS">
          <property name="title">
-          <string>Option1</string>
+          <string>FPS</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLCDNumber" name="lcdFPS"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="boxShader">
+         <property name="title">
+          <string>Shader</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="boxOption2">
+        <widget class="QGroupBox" name="boxBounce">
          <property name="title">
-          <string>Option2</string>
+          <string>Rekursionstiefe/Bounces</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QSpinBox" name="spinBounce">
+            <property name="minimum">
+             <number>2</number>
+            </property>
+            <property name="value">
+             <number>2</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="boxOption3">
+        <widget class="QGroupBox" name="boxLight">
          <property name="title">
-          <string>Option3</string>
+          <string>Licht-Position</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4"/>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="boxRays">
+         <property name="title">
+          <string>Strahlenanzahl</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QSpinBox" name="spinRays"/>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -89,8 +126,28 @@
    <extends>QWidget</extends>
    <header>myglwidget.h</header>
    <container>1</container>
+   <slots>
+    <slot>receiveBounces(int)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>spinBounce</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>widgetRaytracing</receiver>
+   <slot>receiveBounces(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>899</x>
+     <y>359</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>561</x>
+     <y>366</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

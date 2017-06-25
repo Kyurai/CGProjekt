@@ -26,10 +26,13 @@ class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 
+public slots:
+   void receiveBounces(int bounces);
+
 private:
 
 
-
+    int bounces = 2;
 
     float lastX = MyGLWidget::width() / 2.0f;
     float lastY = MyGLWidget::height() /2.0f;
@@ -78,7 +81,7 @@ private:
     float rX=22, rY=116, dist = -120;
 
     //OBJ mesh filename to load
-    const std::string mesh_filename = "C:/Users/lucas/Desktop/CG/CG Projekt Test/models/blocks.obj";
+    const std::string mesh_filename = "/home/dustin/Documents/CG_Prakt/FinalProject/models/blocks.obj";
 
     //background color
     glm::vec4 bg = glm::vec4(0.5,0.5,1,1);
