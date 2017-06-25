@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>textures/earth.jpg</file>
+        <file>models/sphere_high.obj</file>
+        <file>models/bunny.obj</file>
+        <file>models/bunny_low.obj</file>
+        <file>models/cube.obj</file>
+        <file>models/sphere_low.obj</file>
+        <file>shaders/default330.frag</file>
+        <file>shaders/default330.vert</file>
+        <file>models/blocks.obj</file>
+        <file>shaders/flat.vert</file>
+        <file>shaders/flat.frag</file>
+        <file>shaders/shader.vert</file>
+        <file>shaders/shader.frag</file>
+        <file>shaders/raytracer.frag</file>
+        <file>shaders/raytracer.vert</file>
+        <file>shaders/pathtracer.vert</file>
+        <file>shaders/pathtracer.frag</file>
+    </qresource>
+</RCC>
