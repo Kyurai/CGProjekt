@@ -360,7 +360,6 @@ void MyGLWidget::initializeGL(){
         timer.start();
 
 
-
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         //glCullFace(GL_BACK);
@@ -386,6 +385,15 @@ void MyGLWidget::paintGL(){
         float currentFrame = (timer.elapsed())/1000.0f;
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+
+        double fps;
+        if(timer.elapsed() >= 1000.0 ){
+            fps = total_frames / ((double)timer.elapsed()/1000.0);
+            total_frames = 0;
+        }
+        std:cout << "FPS: " << fps << std::endl;
+
 
         //std::cout << "deltaTime: " << deltaTime << std::endl;
 
